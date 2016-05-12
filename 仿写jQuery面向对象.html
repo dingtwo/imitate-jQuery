@@ -18,30 +18,22 @@
  *3. css
  */
 
-//简单版,单独判断id, class 标签
-/*
-function $ (arg) {
-	//onready
- 	if (typeof arg == "function") {
- 		window.onReady(arg());
- 		//选择器
- 		//id	
- 	}else if (/^#/.test(arg)) {
- 		arg = arg.substr(1);
- 		return document.getElementById(arg);
- 	}else if (/^\./.test(arg)) {
- 		arg = arg.substr(1);
- 		return document.getElementsByClassName(arg);
- 		
- 	}else  {
- 		return document.getElementsByTagName(arg);
+ 	function getClassTag (parentObj, className) {
+ 		 if (parentObj.getElementsByClassName) {
+ 		 	return parentObj.getElementsByClassName(className);
+ 		 } 
+ 		 var nodes = parentObj.getElementsByTagName("*");
+ 		 var arr = [];
+ 		 var reg = new new RegExp("/\b"+className+"\b/");
+ 		 for (var i = 0; i < nodes.length; i++) {
+ 		 	if (reg.test(nodes[i].className)) {
+ 		 		arr.push(nodes[i]);
+ 		 	}
+ 		 }
+ 		 console.log(arr);
+ 		 return arr;
  	}
- 	
 
-}
-
-	console.log($('.div2'));
-*/
 
 	function ready (fn) {
 		 if (window.addEventListener) {
@@ -79,6 +71,7 @@ function $ (arg) {
 	}
 
 
+
 	function getElements(arg) {
 		//去除首尾空格
 		var reg = /^\s+|\s+$/g;
@@ -102,10 +95,10 @@ function $ (arg) {
 					children.push(node);
 				}else if (/^\./.test(currentQuery)) {
 					// console.log(parents[j]);
-					var nodes = parents[j].getElementsByClassName(currentQuery.substr(1));
-					for (var k = 0; k < nodes.length; k++) {
-						children.push(nodes[k]);
-					}	
+					var nodes = getClassTag(parents[j], currentQuery.substr(1));	
+					for (var i = 0; i < nodes.length; i++) {
+						children.push(nodes[i]);
+					}
 				}else  {
 					var nodes = parents[j].getElementsByTagName(currentQuery);
 					for (var k = 0; k < nodes.length; k++) {
@@ -118,10 +111,39 @@ function $ (arg) {
 		return children;
 	}
 
-//添加时间
+
+	function getStyle (obj, styleName) {
+		if (window.getComputedStyle) {
+				//现代浏览器
+				return getComputedStyle(obj, null)[styleName];
+			}else {
+				//IE专属
+				return obj.currentStyle(styleName);
+			}
+	}
+
+
+	function setStyle(obj, styleName, styleValue) {
+		//带px的可以直接写数字, 也可以写字符串"200px"
+		var numStyleArr = ["left", "top", "right", "botton"];
+		for (var i = 0; i < numStyleArr.length; i++) {
+			if (styleName == numStyleArr[i]) {
+				styleValue = (typeof styleValue == "number") ? (styleValue + "px") : styleValue;  
+			}
+		}
+		obj.style[styleName] = styleValue;
+	}
+
+
+/**
+ * 添加事件
+ * @param {eventName: 事件名}	
+ * @param {obj: 要添加事件的对象}
+ * @param {事件的回调}
+ */
 	function addEvent(eventName, obj, fn) {
 		function callFn (e) {
-			var ev = e|window.event;
+			var ev = e||window.event;
 			fn.call(obj, ev);
 		}
 		if (obj.addEventListener) {
@@ -130,12 +152,14 @@ function $ (arg) {
 			obj.attachEvent("on"+eventName, callFn);
 		}
 	}
-//在类的对象原型上添加
+//在JQ的对象原型上添加
 	//on
 	JQ.prototype.on = function (eventNames, fn) {
 		var eventArr = eventNames.split(" ");
 		for (var i = 0; i < eventArr.length; i++) {
-
+			for (var j = 0; j < this.elements.length; j++) {
+				addEvent(eventArr[i], this.elements[j], fn);
+			}
 		}
 	}
 
@@ -151,16 +175,39 @@ function $ (arg) {
 		}
 	}
 
+	//css
+	JQ.prototype.css = function () {
+		if (arguments.length == 1) {
+			//取值
+			if (typeof arg == "string") {
+				return getStyle(this.elements[0], arguments[0]);
+			}else {
+				//对象-多个属性的设置
+				for (var styleName in arguments[0]) {
+					setStyle(this.elements[0], styleName, arguments[0][styleName]);
+				}
+			}
+		}else {
+			setStyle(this.elements[0], arguments[0], arguments[1]);
+		}
+	}
+
+//封装$函数
 	function $ (arg) {
 		return new JQ(arg);
 	}
 
 	// $("   div   #div   .div1    span   ");
-	console.log($("#div1  div input").val("请输入用户名"));
+
 	$(function  () {
 		alert("你好");
 	})
 
+
+	$('.div2').on('click', function(event) {
+		event.preventDefault();
+		$(this).css('background', 'red');
+	});
 
 </script>
 </body>
