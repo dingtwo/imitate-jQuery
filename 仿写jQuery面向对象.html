@@ -78,6 +78,7 @@ function $ (arg) {
 		 }
 	}
 
+
 	function getElements(arg) {
 		//去除首尾空格
 		var reg = /^\s+|\s+$/g;
@@ -117,11 +118,29 @@ function $ (arg) {
 		return children;
 	}
 
-	// function val () {
-	// 	return this.elements[0].value;
-	// }
-
+//添加时间
+	function addEvent(eventName, obj, fn) {
+		function callFn (e) {
+			var ev = e|window.event;
+			fn.call(obj, ev);
+		}
+		if (obj.addEventListener) {
+			obj.addEventListener(eventName, callFn, false);
+		}else {
+			obj.attachEvent("on"+eventName, callFn);
+		}
+	}
 //在类的对象原型上添加
+	//on
+	JQ.prototype.on = function (eventNames, fn) {
+		var eventArr = eventNames.split(" ");
+		for (var i = 0; i < eventArr.length; i++) {
+
+		}
+	}
+
+
+	//val()
 	JQ.prototype.val = function (arg) {
 		if (arg) {
 			for (var i = 0; i < this.elements.length; i++) {
