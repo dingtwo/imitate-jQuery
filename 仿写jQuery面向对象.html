@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div id="div1">
+		<div class="div2">你猜
+			<div><input type="text" value="输入"></div>
+		</div>
+	</div>
+	<div class="div2">2</div>
+<script type="text/javascript">
+/*
+ *1. 选择器
+ *2. on()事件绑定	
+ *3. css
+ */
+
+//简单版,单独判断id, class 标签
+/*
+function $ (arg) {
+	//onready
+ 	if (typeof arg == "function") {
+ 		window.onReady(arg());
+ 		//选择器
+ 		//id	
+ 	}else if (/^#/.test(arg)) {
+ 		arg = arg.substr(1);
+ 		return document.getElementById(arg);
+ 	}else if (/^\./.test(arg)) {
+ 		arg = arg.substr(1);
+ 		return document.getElementsByClassName(arg);
+ 		
+ 	}else  {
+ 		return document.getElementsByTagName(arg);
+ 	}
+ 	
+
+}
+
+	console.log($('.div2'));
+*/
+
+	function ready (fn) {
+		 if (window.addEventListener) {
+		 	window.addEventListener("DOMContentLoaded", fn,false)
+		 } else {
+		 	var os = document.createElement("script");
+		 	os.defer = true;
+		 	os.onreadystatechange = function  () {
+		 		 if (os.readyState == "complete") {
+		 		 	fn();
+		 		 } 
+		 	}
+		 	var oH=document.getElementsByTagName("head")[0];
+		
+		    oH.appendChild(oS);
+		 }
+	}
+
+
+	function JQ (arg) {
+		this.elements = [];
+		 switch(typeof arg) {
+		 	//方法
+		 	case "function":
+		 		ready(arg);
+		 		break;
+		 		//选择器
+		 	case "string":
+		 		this.elements = getElements(arg);
+		 		break;
+		 		//原生对象转jq对象
+		 	default:
+		 		this.elements.push(arg);
+		 }
+	}
+
+	function getElements(arg) {
+		//去除首尾空格
+		var reg = /^\s+|\s+$/g;
+		arg = arg.replace(reg, "");
+		//去掉中间空格
+		var reg = /\s+/g;
+		arg = arg.replace(reg, " ");
+		queryArr = arg.split(" ");
+
+		//开始遍历,在遍历的时候每次第一个是父级元素,下一个是子级,下次遍历子级作为新的父级,再下一级作为子级,所以声明两个数组来分别存放父级和子级,在遍历完一次之后子级作为新的父级遍历
+		//这里有个坑是class和tag获取到的是数组,需要单独遍历
+		var parents = [document];
+		var children = [];
+
+		for (var i = 0; i < queryArr.length; i++) {
+			var currentQuery = queryArr[i];
+			children = [];
+			for (var j = 0; j < parents.length; j++) {
+				if (/^#/.test(currentQuery)) {
+					var node = parents[j].getElementById(currentQuery.substr(1)) ;
+					children.push(node);
+				}else if (/^\./.test(currentQuery)) {
+					// console.log(parents[j]);
+					var nodes = parents[j].getElementsByClassName(currentQuery.substr(1));
+					for (var k = 0; k < nodes.length; k++) {
+						children.push(nodes[k]);
+					}	
+				}else  {
+					var nodes = parents[j].getElementsByTagName(currentQuery);
+					for (var k = 0; k < nodes.length; k++) {
+						children.push(nodes[k]);
+					}
+				}
+				parents = children;
+			}
+		}
+		return children;
+	}
+
+	// function val () {
+	// 	return this.elements[0].value;
+	// }
+
+//在类的对象原型上添加
+	JQ.prototype.val = function (arg) {
+		if (arg) {
+			for (var i = 0; i < this.elements.length; i++) {
+				this.elements[i].value = arg;
+			}
+		}else{
+		 	return this.elements[0].value; 
+		}
+	}
+
+	function $ (arg) {
+		return new JQ(arg);
+	}
+
+	// $("   div   #div   .div1    span   ");
+	console.log($("#div1  div input").val("请输入用户名"));
+	$(function  () {
+		alert("你好");
+	})
+
+
+</script>
+</body>
+</html>
