@@ -53,12 +53,14 @@
 W3C采取了折衷的办法, 任何发生在w3c事件模型中的事件，首是进入捕获阶段，到达目标元素，再进入冒泡阶段.
 
 我们可以通过addEventListener方法来确定是在捕获时触发事件, 还是在冒泡时绑定函数, 如果最后一个参数为true, 则在捕获阶段绑定事件, 如果为false, 在冒泡阶段绑定事件, 比如:
+
 	smallDiv.addEventListener("click", function  () {
 		alert("小");
 	}, false);
 	bigDiv.addEventListener("click", function () {
 		alert("大");
 	}, true); 
+
 显示的顺序为大->小, 分析一下事件的响应过程
 
 1. 当点击红色元素(smallDiv)时, 事件进入捕获阶段, 首先找到父级视图(bigDiv), 父级视图设置为true, 函数在捕获阶段绑定, 所以先执行alert("大"), 然后向上找, 找到自己, 为false, 所以没有函数执行.
